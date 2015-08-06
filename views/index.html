@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Blog to learn from</title>    
+  </head>
+  <body>
+	<main>
+		<header>
+			<h1>Blog to learn from</h1>
+		</header>
+		<hr>
+		{% for article in articles%}
+		<article>
+			<header>			
+				<h2><a href="{{article.title}}">{{article.title}}</a></h2>
+				<i>{{article.author}} / {{article.date|date('d-m-Y')}}</i>
+			</header>
+			<p>
+				{{article.body}}
+			<p>
+			<hr>
+			</article>
+		{% endfor %}
+	</main>
+  </body>
+</html>
