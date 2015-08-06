@@ -1,28 +1,37 @@
-var express = require('express')
-  , app = express() // Web framework to handle routing requests
-  , cons = require('consolidate'); // Templating library adapter for Express
+var express = require('express'),
+    app = express(), 
+    cons = require('consolidate'), 
+    MongoClient = require('mongodb').MongoClient,
+    Server = require('mongodb').Server;
 
 app.engine('html', cons.swig);
 app.set('view engine', 'html');
-app.set('views', __dirname + '/views');
+app.set('views', __dirname+"/views");
 app.use(app.router);
 
-// Handler for internal server errors
-function errorHandler(err, req, res, next) {
-    console.error(err.message);
-    console.error(err.stack);
-    res.status(500);
-    res.render('error_template', { error: err });
-}
+var mongoClient = new MongoClient(new Server('localhost', 27017, { 'native_parser' : true} ));
+var db = mongoClient.db('blogApp');
 
-app.use(errorHandler);
-
-app.get('/:name', function(req, res, next) {
-    var name = req.params.name;
-    var getvar1 = req.query.getvar1;
-    var getvar2 = req.query.getvar2;
-    res.render('hello', { name : name, getvar1 : getvar1, getvar2 : getvar2 });
+app.get('/', function(req, res){
+	db.collection('posts').find().toArray(function(err, docs){				
+		if(err) throw err;
+		
+		res.render('index', {"articles" : docs});
+	}); 
 });
 
-app.listen(3000);
-console.log('Express server listening on port 3000');
+app.get('/:title', function(req, res){
+	var title = req.params.title;
+	db.collection('posts').findOne({"title": title}, function(err, doc){
+		if(err) throw err;
+
+		res.render('post', {"article":doc});
+	})
+});
+
+mongoClient.open(function(err, mongoclient) {
+	if(err) throw err;
+	
+	app.listen(3000);
+	console.log('Express server started on port 3000');
+});
